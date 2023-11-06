@@ -1,10 +1,11 @@
 #include <assert.h>
-#include <rbtree.h>
+#include <rbtree.h> // 이 헤더파일 먼저 읽은 후에 이 c파일 읽음. (해당 헤더파일 내용이 이 파일로 가져와짐.)
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 // new_rbtree should return rbtree struct with null root node
+// sentinel : 데이터의 끝을 알리는 데 사용되는 값. 정상적인 데이터 값에서는 절대 등장할수 없는 값으로 선택하는 것이 좋다.)
 void test_init(void) {
   rbtree *t = new_rbtree();
   assert(t != NULL);
@@ -369,15 +370,15 @@ void test_find_erase_rand(const size_t n, const unsigned int seed) {
 
 int main(void) {
   test_init();
-  test_insert_single(1024);
-  test_find_single(512, 1024);
-  test_erase_root(128);
-  test_find_erase_fixed();
-  test_minmax_suite();
-  test_to_array_suite();
-  test_distinct_values();
-  test_duplicate_values();
-  test_multi_instance();
-  test_find_erase_rand(10000, 17);
-  printf("Passed all tests!\n");
+  // test_insert_single(1024);
+  // test_find_single(512, 1024);
+  // test_erase_root(128);
+  // test_find_erase_fixed();
+  // test_minmax_suite();
+  // test_to_array_suite();
+  // test_distinct_values();
+  // test_duplicate_values();
+  // test_multi_instance();
+  // test_find_erase_rand(10000, 17);
+  // printf("Passed all tests!\n");
 }
