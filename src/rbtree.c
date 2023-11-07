@@ -2,15 +2,15 @@
 
 #include <stdlib.h>
 
+// 여러 개의 tree 생성, 각각 다른 내용들을 저장할 수 있는 RB tree 구조체 생성
 rbtree *new_rbtree(void) {
   // tree 구조체 동적 할당
-  rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));  // 하나의 rbtree 구조체 동적 할당 (p는 rbtree 자체를 가리키는 포인터)
+  rbtree *t = (rbtree *)calloc(1, sizeof(rbtree));  // 하나의 rbtree 구조체 동적 할당 (p는 rbtree 자체를 가리키는 포인터)
 
-  // TODO: 여러 개의 tree 생성, 각각 다른 내용들을 저장할 수 있는 RB tree 구조체 생성
   node_t *nil = (node_t *)calloc(1, sizeof(node_t));  // nil은 새로운 nil 노드를 생성하고 그 결과를 가리키는 포인터.
   nil->color = RBTREE_BLACK;  // nil 노드 색상 설정 -> 항상 black
-  p->nil = p->root = nil; // nil노드를 rbtree의 'nil', 'root' 필드에 할당. (tree 빈 경우 root는 nil 노드여야 함.)
-  return p; // 새로 생성된 rbtree의 포인터가 반환됨. 이후에 p를 사용해 트리 작업 수행 가능
+  t->nil = t->root = nil; // nil노드를 rbtree의 'nil', 'root' 필드에 할당. (tree 빈 경우 root는 nil 노드여야 함.)
+  return t; // 새로 생성된 rbtree의 포인터가 반환됨. 이후에 p를 사용해 트리 작업 수행 가능
 }
 
 void delete_rbtree(rbtree *t) {
@@ -18,9 +18,34 @@ void delete_rbtree(rbtree *t) {
   free(t);
 }
 
+// 노드 삽입
 node_t *rbtree_insert(rbtree *t, const key_t key) {
-  // TODO: implement insert
-  return t->root;
+  node_t *new_node = (node_t *)calloc(1, sizeof(node_t));  // 새 노드 동적으로 생성
+  new_node->key = key;// 노드의 key 입력받기
+  new_node->color = RBTREE_RED;  // 삽입하는 노드는 항상 red (삽입 노드가 루트 노드일 때만 black으로 바꿔주기)
+  new_node->left = new_node->right = t->nil;  // 삽입한 노드의 자식들 nil(sentinel node)로 설정
+  
+  // 삽입할 위치 탐색
+  node_t *current = t->root;  // 변수 current를 루트 노드로 초기화
+  while(current != t->nil){ // current가 리프 노드(=nil)이 아닐 때까지 반복
+    if(key < current->key){ // key는 new_node의 키인가? current는 점점 아래로 내려가나?
+      if(current->left == t->nil){
+        current->left = new_node; // 새 노드를 왼쪽 자식으로 추가
+        break;
+      }
+      current = current->left;  // 반복 ~~~~~~~
+    }
+  }
+  new_node->parent = current; // 새 노드의 부모 지정
+
+  if(current == t->nil){  // 루트 노드가 비어있으면
+    t->root = new_node; // 새 노드를 루트 노드로 지정
+  }
+
+  // 리밸런싱 함수 호출
+  rbtree_insert_fixup(t, new_node);
+
+  return t->root; // 루트 노드 반환. 삽입 이후에도 트리의 루트 노드 가리키도록 유지. return new_node; 하면 안좋은 것 같은데? 
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
