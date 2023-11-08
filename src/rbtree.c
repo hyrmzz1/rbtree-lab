@@ -63,9 +63,23 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
 void rbtree_insert_fixup(rbtree *t, node_t *node){
 }
 
+// 트리 내에 특정 key 값을 갖는 노드가 있는지 탐색 (있으면 node pointer 반환, 없으면 null 반환)
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  // TODO: implement find
-  return t->root;
+  node_t *current = t->root;  // 루트부터 탐색 시작
+  while(current != t->nil){
+    if(key == current->key)
+      return current;
+    else{
+      if(key < current->key) // current의 왼쪽 서브트리로
+        current = current->left;
+      else  // current의 오른쪽 서브트리로
+        current = current->right;
+    }
+  }
+
+  if(current == t->nil){
+    return NULL;
+  }
 }
 
 node_t *rbtree_min(const rbtree *t) {
