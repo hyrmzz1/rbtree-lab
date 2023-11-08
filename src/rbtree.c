@@ -4,7 +4,6 @@
 
 // 여러 개의 tree 생성, 각각 다른 내용들을 저장할 수 있는 RB tree 구조체 생성
 rbtree *new_rbtree(void) {
-  // tree 구조체 동적 할당
   rbtree *t = (rbtree *)calloc(1, sizeof(rbtree));  // 하나의 rbtree 구조체 동적 할당 (p는 rbtree 자체를 가리키는 포인터)
 
   node_t *nil = (node_t *)calloc(1, sizeof(node_t));  // nil은 새로운 nil 노드를 생성하고 그 결과를 가리키는 포인터.
@@ -24,6 +23,7 @@ void delete_all_node(rbtree *t, node_t *n) {
 
 // RB tree 구조체가 차지했던 메모리 반환 (valgrind로 나타나면 안됨)
 void delete_rbtree(rbtree *t) {
+  delete_all_node(t, t->root);
   if(t->root == t->nil){  // 트리 비어있으면 (노드들 다 반환되었으면)
     free(t->nil);
     free(t);
@@ -120,7 +120,33 @@ void right_rotate(rbtree *t, node_t *x){
 }
 
 // 리밸런싱
-void rbtree_insert_fixup(rbtree *t, node_t *node){
+void rbtree_insert_fixup(rbtree *t, node_t *node){ // node n으로 변수명 바꾸기
+  // node_t *parent = node->parent;
+  // node_t *grand_parent = parent->parent;
+  // int isLeft = node == parent->left;
+  // // int isRight = node == parent->right;
+  // int isLeft_parent = parent == grand_parent->left;
+  // // int isRight_parent = parent == grand_parent->right;
+  // node_t *uncle = (isLeft_parent)? grand_parent->right : grand_parent->left;
+
+  // // 회전으로 인해 red 노드가 루트 노드가 된다면 black으로 색상 변경
+  // if(node == t->root){
+  //   node->color = RBTREE_BLACK;
+  //   return; // 함수 종료
+  // }
+
+  // // 리밸런싱 이유: red가 연속 (속성 4 위반) => 새 노드는 red니까 부모 노드 black이면 연속하지 않으므로 리밸런싱 X.
+  // if(parent->color == RBTREE_BLACK){
+  //   return; // 함수 종료
+  // }
+
+  // case 3 - 삽입 노드가 부모의 l/r 자식 & 부모 red이면서 조부모 노드의 l/r 자식 & 삼촌 노드는 black ('/' 모양)
+  // 부모 노드와 조부모 노드의 색 바꾸기
+  // 조부모 노드 기준으로 회전
+
+  // case 2 - 삽입 노드가 부모의 왼쪽 자식 & ('<' 모양)
+
+  // case 1
 }
 
 // 트리 내에 특정 key 값을 갖는 노드가 있는지 탐색 (있으면 node pointer 반환, 없으면 null 반환)
