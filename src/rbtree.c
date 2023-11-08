@@ -96,6 +96,11 @@ void left_rotate(rbtree *t, node_t *x){
 }
 
 void right_rotate(rbtree *t, node_t *x){
+  // Segmentation fault 때문에 추가한 if문
+  if (x == t->nil || x->left == t->nil) {
+    return; // 무효한 노드나 왼쪽 서브트리가 없는 노드에 대한 회전은 처리하지 않습니다.
+  }
+
   node_t *y = x->left;
   x->left = y->right; // y의 오른쪽 서브트리를 x의 왼쪽 서브트리로 옮기기
 
@@ -107,13 +112,12 @@ void right_rotate(rbtree *t, node_t *x){
   if(x->parent == t->nil){// x의 부모가 없다면 (= x가 루트 노드라면)
     t->root = y;  // y를 트리의 루트로.
   }
-  else{
-    if(x == x->parent->left){// x가 부모의 왼쪽 노드라면
-      x->parent->left = y;  // y는 x의 부모의 왼쪽 노드가 됨
-    }
-    else{ // x가 부모의 오른쪽 노드라면
-      x->parent->right = y; // y는 x의 부모의 오른쪽 노드가 됨
-    }
+  //Segmentation fault 발생 ;;;;;
+  else if(x == x->parent->right){// x가 부모의 오른쪽 노드라면
+    x->parent->right = y;  // y는 x의 부모의 오른쪽 노드가 됨
+  }
+  else{ // x가 부모의 왼쪽 노드라면
+    x->parent->left = y; // y는 x의 부모의 왼쪽 노드가 됨
   }
   y->right = x;
   x->parent = y;  // y가 x의 부모가 됨.
@@ -123,7 +127,7 @@ void right_rotate(rbtree *t, node_t *x){
 void rbtree_insert_fixup(rbtree *t, node_t *n){ 
   node_t *parent = n->parent;
   node_t *grand_parent = parent->parent;
-  node_t *uncle = (parent == grand_parent->left) ? grand_parent->right : grand_parent->left;
+  node_t *uncle;
 
   // 회전으로 인해 red 노드가 루트 노드가 된다면 black으로 색상 변경
   if(n == t->root){
@@ -136,6 +140,7 @@ void rbtree_insert_fixup(rbtree *t, node_t *n){
     return;
 
   while(parent->color == RBTREE_RED){
+    uncle = (parent == grand_parent->left) ? grand_parent->right : grand_parent->left;
     if(parent == grand_parent->left){ // uncle == grandparent->right
       // case 1
       if(uncle->color == RBTREE_RED){
