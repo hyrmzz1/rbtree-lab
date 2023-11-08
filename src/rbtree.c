@@ -69,12 +69,8 @@ node_t *rbtree_find(const rbtree *t, const key_t key) {
   while(current != t->nil){
     if(key == current->key)
       return current;
-    else{
-      if(key < current->key) // current의 왼쪽 서브트리로
-        current = current->left;
-      else  // current의 오른쪽 서브트리로
-        current = current->right;
-    }
+    else
+      current = (key < current->key) ? current->left : current->right;
   }
 
   if(current == t->nil){
