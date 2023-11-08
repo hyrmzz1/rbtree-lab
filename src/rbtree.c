@@ -38,32 +38,32 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   new_node->left = new_node->right = t->nil;  // 삽입한 노드의 자식들 nil(sentinel node)로 설정
   
   // 삽입할 위치 탐색
-  node_t *current = t->root;  // 변수 current는 현재 위치를 가리킴. 일단 루트 노드로 초기화
+  node_t *temp = t->root;  // 변수 temp는 현재 위치를 가리킴. 일단 루트 노드로 초기화
 
-  if(current == t->nil){  // 루트 노드가 비어있으면
+  if(temp == t->nil){  // 루트 노드가 비어있으면
     t->root = new_node; // 새 노드를 루트 노드로 지정
     new_node->color = RBTREE_BLACK; // 루트 노드는 검정색
     return new_node;
   }
 
-  while(current != t->nil){ // current가 리프 노드(=nil)에 도달하기 전까지 반복
-    // new_node의 key와 current의 key 비교
-    if(key < current->key){ // current는 node_t 구조체의 포인터이므로 key 멤버에 접근 가능. new_node의 key가 current의 key보다 작다면 왼쪽 서브트리로
-      if(current->left == t->nil){
-        current->left = new_node; // 새 노드를 왼쪽 자식으로 추가
+  while(temp != t->nil){ // temp가 리프 노드(=nil)에 도달하기 전까지 반복
+    // new_node의 key와 temp의 key 비교
+    if(key < temp->key){ // temp는 node_t 구조체의 포인터이므로 key 멤버에 접근 가능. new_node의 key가 temp의 key보다 작다면 왼쪽 서브트리로
+      if(temp->left == t->nil){
+        temp->left = new_node; // 새 노드를 왼쪽 자식으로 추가
         break;
       }
-      current = current->left;  // current는 점점 왼쪽 아래로 내려옴
+      temp = temp->left;  // temp는 점점 왼쪽 아래로 내려옴
     }
-    else if(key > current->key){ // new_node의 key가 current의 key보다 크다면 오른쪽 서브트리로
-      if(current->right == t->nil){
-        current->right = new_node; // 새 노드를 왼쪽 자식으로 추가
+    else if(key > temp->key){ // new_node의 key가 temp의 key보다 크다면 오른쪽 서브트리로
+      if(temp->right == t->nil){
+        temp->right = new_node; // 새 노드를 왼쪽 자식으로 추가
         break;
       }
-      current = current->right;
+      temp = temp->right;
     }
   }
-  new_node->parent = current; // 새 노드의 부모 지정
+  new_node->parent = temp; // 새 노드의 부모 지정
 
   // 리밸런싱 함수 호출
   rbtree_insert_fixup(t, new_node);
@@ -120,49 +120,105 @@ void right_rotate(rbtree *t, node_t *x){
 }
 
 // 리밸런싱
-void rbtree_insert_fixup(rbtree *t, node_t *node){ 
+void rbtree_insert_fixup(rbtree *t, node_t *n){ 
+  node_t *parent = n->parent;
+  node_t *grand_parent = parent->parent;
+  node_t *uncle = (parent == grand_parent->left) ? grand_parent->right : grand_parent->left;
+
+  // 회전으로 인해 red 노드가 루트 노드가 된다면 black으로 색상 변경
+  if(n == t->root){
+    n->color = RBTREE_BLACK;
+    return;
+  }
+
+  // 리밸런싱 이유: red가 연속 (속성 4 위반) => 새 노드는 red니까 부모 노드 black이면 연속 X
+  if(parent->color == RBTREE_BLACK)
+    return;
+
+  while(parent->color == RBTREE_RED){
+    if(parent == grand_parent->left){ // uncle == grandparent->right
+      // case 1
+      if(uncle->color == RBTREE_RED){
+        parent->color = RBTREE_BLACK;
+        uncle->color = RBTREE_BLACK;
+        grand_parent->color = RBTREE_RED;
+        n = grand_parent;
+      }
+      // case 2 ('<' 모양)
+      else{
+        if(n == parent->right){
+          n = parent;
+          left_rotate(t, n);
+        }
+        // case 3  ('/' 모양)
+        parent->color = RBTREE_BLACK;
+        grand_parent->color = RBTREE_RED;
+        right_rotate(t, grand_parent);
+      }
+    }
+    else{ // uncle == grandparent->left
+      if(uncle->color == RBTREE_RED){
+          parent->color = RBTREE_BLACK;
+          uncle->color = RBTREE_BLACK;
+          grand_parent->color = RBTREE_RED;
+          n = grand_parent;
+        }
+        // case 2 ('<' 모양)
+        else{
+          if(n == parent->left){
+            n = parent;
+            right_rotate(t, n);
+          }
+          // case 3  ('/' 모양)
+          parent->color = RBTREE_BLACK;
+          grand_parent->color = RBTREE_RED;
+          left_rotate(t, grand_parent);
+        }
+    }
+  }
+  t->root->color = RBTREE_BLACK;
 }
 
 // 트리 내에 특정 key 값을 갖는 노드가 있는지 탐색 (있으면 node pointer 반환, 없으면 null 반환)
 node_t *rbtree_find(const rbtree *t, const key_t key) {
-  node_t *current = t->root;  // 루트부터 탐색 시작
+  node_t *temp = t->root;  // 루트부터 탐색 시작
 
-  while(current != t->nil){
-    if(key == current->key)
-      return current;
+  while(temp != t->nil){
+    if(key == temp->key)
+      return temp;
     else
-      current = (key < current->key) ? current->left : current->right;
+      temp = (key < temp->key) ? temp->left : temp->right;
   }
 
-  if(current == t->nil){
+  if(temp == t->nil){
     return NULL;
   }
 }
 
 // 최소값 node pointer 반환
 node_t *rbtree_min(const rbtree *t) {
-  node_t *current = t->root;  // 루트부터 탐색 시작
+  node_t *temp = t->root;  // 루트부터 탐색 시작
 
-  if(current == t->nil) // 빈 노드라면
-    return current;
+  if(temp == t->nil) // 빈 노드라면
+    return temp;
 
-  while(current->left != t->nil){
-    current = current->left;  // 트리의 맨 왼쪽 노드가 최소
+  while(temp->left != t->nil){
+    temp = temp->left;  // 트리의 맨 왼쪽 노드가 최소
   }
-  return current;
+  return temp;
 }
 
 // 최대값 node pointer 반환
 node_t *rbtree_max(const rbtree *t) {
-  node_t *current = t->root;
+  node_t *temp = t->root;
 
-  if(current == t->nil) // 빈 노드라면
-    return current;
+  if(temp == t->nil) // 빈 노드라면
+    return temp;
 
-  while(current->right != t->nil){
-    current = current->right; // 트리의 맨 오른쪽 노드가 최대
+  while(temp->right != t->nil){
+    temp = temp->right; // 트리의 맨 오른쪽 노드가 최대
   }
-  return current;
+  return temp;
 }
 
 int rbtree_erase(rbtree *t, node_t *p) {
@@ -183,8 +239,3 @@ void inOrder(rbtree *t, node_t *n){
   printf("Key : %d, Color : %d\n", n->key, n->color);  //color는 열거형 상수이므로 정수형으로 출력 (0:red, 1:black)
   inOrder(t, n->right);
 }
-
-/* 참고
-pointer -> member
-포인터를 통해 구조체나 클래스 내의 멤버(변수 or 함수)에 접근 가능
-*/
