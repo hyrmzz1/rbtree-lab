@@ -13,9 +13,21 @@ rbtree *new_rbtree(void) {
   return t; // 새로 생성된 rbtree의 포인터가 반환됨. 이후에 p를 사용해 트리 작업 수행 가능
 }
 
+// RB tree 구조체의 노드들이 차지했던 메모리 반환 (valgrind로 나타나면 안됨)
+void delete_all_node(rbtree *t, node_t *n) {
+  if(n == t->nil)
+    return;
+  delete_all_node(t, n->left);
+  delete_all_node(t, n->right);
+  free(n);
+}
+
+// RB tree 구조체가 차지했던 메모리 반환 (valgrind로 나타나면 안됨)
 void delete_rbtree(rbtree *t) {
-  // TODO: reclaim the tree nodes's memory
-  free(t);
+  if(t->root == t->nil){  // 트리 비어있으면 (노드들 다 반환되었으면)
+    free(t->nil);
+    free(t);
+  }
 }
 
 // 노드 삽입
@@ -105,7 +117,6 @@ void right_rotate(rbtree *t, node_t *x){
   }
   y->right = x;
   x->parent = y;  // y가 x의 부모가 됨.
-
 }
 
 // 리밸런싱
