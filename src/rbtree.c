@@ -59,6 +59,55 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   return t->root; // 삽입 이후 루트 노드 변경될 수 있으므로 트리의 루트 노드 반환
 }
 
+void left_rotate(rbtree *t, node_t *x){
+  node_t *y = x->right;
+  x->right = y->left; // y의 왼쪽 서브트리를 x의 오른쪽 서브 트리로 옮기기
+
+  if(y->left != t->nil){// y의 왼쪽 서브트리의 부모를 x로 연결
+    y->left->parent = x;
+  }
+  y->parent = x->parent;  // x의 부모를 y의 부모로 연결 (양방향 연결)
+
+  if(x->parent == t->nil){// x의 부모가 없다면 (= x가 루트 노드라면)
+    t->root = y;  // y를 트리의 루트로.
+  }
+  else{
+    if(x == x->parent->left){// x가 부모의 왼쪽 노드라면
+      x->parent->left = y;  // y는 x의 부모의 왼쪽 노드가 됨
+    }
+    else{ // x가 부모의 오른쪽 노드라면
+      x->parent->right = y; // y는 x의 부모의 오른쪽 노드가 됨
+    }
+  }
+  y->left = x;
+  x->parent = y;  // y가 x의 부모가 됨.
+}
+
+void right_rotate(rbtree *t, node_t *x){
+  node_t *y = x->left;
+  x->left = y->right; // y의 오른쪽 서브트리를 x의 왼쪽 서브트리로 옮기기
+
+  if(y->right != t->nil){// y의 오른쪽 서브트리의 부모를 x로 연결
+    y->right->parent = x;
+  }
+  y->parent = x->parent;  // x의 부모를 y의 부모로 연결 (양방향 연결)
+
+  if(x->parent == t->nil){// x의 부모가 없다면 (= x가 루트 노드라면)
+    t->root = y;  // y를 트리의 루트로.
+  }
+  else{
+    if(x == x->parent->left){// x가 부모의 왼쪽 노드라면
+      x->parent->left = y;  // y는 x의 부모의 왼쪽 노드가 됨
+    }
+    else{ // x가 부모의 오른쪽 노드라면
+      x->parent->right = y; // y는 x의 부모의 오른쪽 노드가 됨
+    }
+  }
+  y->right = x;
+  x->parent = y;  // y가 x의 부모가 됨.
+
+}
+
 // 리밸런싱
 void rbtree_insert_fixup(rbtree *t, node_t *node){
 }
