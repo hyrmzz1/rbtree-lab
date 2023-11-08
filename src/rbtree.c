@@ -115,6 +115,15 @@ int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   return 0;
 }
 
+// 오름차순으로 키 값 출력하기 위한 중위순회 함수 (트리 구조 확인용)
+void inOrder(rbtree *t, node_t *n){
+  if(n == t->nil)
+      return;
+  inOrder(t, n->left);
+  printf("Key : %d, Color : %d\n", n->key, n->color);  //color는 열거형 상수이므로 정수형으로 출력 (0:red, 1:black)
+  inOrder(t, n->right);
+}
+
 /* 참고
 pointer -> member
 포인터를 통해 구조체나 클래스 내의 멤버(변수 or 함수)에 접근 가능
