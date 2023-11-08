@@ -26,26 +26,41 @@ node_t *rbtree_insert(rbtree *t, const key_t key) {
   new_node->left = new_node->right = t->nil;  // 삽입한 노드의 자식들 nil(sentinel node)로 설정
   
   // 삽입할 위치 탐색
-  node_t *current = t->root;  // 변수 current를 루트 노드로 초기화
-  while(current != t->nil){ // current가 리프 노드(=nil)이 아닐 때까지 반복
-    if(key < current->key){ // key는 new_node의 키인가? current는 점점 아래로 내려가나?
+  node_t *current = t->root;  // 변수 current는 현재 위치를 가리킴. 일단 루트 노드로 초기화
+
+  if(current == t->nil){  // 루트 노드가 비어있으면
+    t->root = new_node; // 새 노드를 루트 노드로 지정
+    new_node->color = RBTREE_BLACK; // 루트 노드는 검정색
+    return new_node;
+  }
+
+  while(current != t->nil){ // current가 리프 노드(=nil)에 도달하기 전까지 반복
+    // new_node의 key와 current의 key 비교
+    if(key < current->key){ // current는 node_t 구조체의 포인터이므로 key 멤버에 접근 가능. new_node의 key가 current의 key보다 작다면 왼쪽 서브트리로
       if(current->left == t->nil){
         current->left = new_node; // 새 노드를 왼쪽 자식으로 추가
         break;
       }
-      current = current->left;  // 반복 ~~~~~~~
+      current = current->left;  // current는 점점 왼쪽 아래로 내려옴
+    }
+    else if(key > current->key){ // new_node의 key가 current의 key보다 크다면 오른쪽 서브트리로
+      if(current->right == t->nil){
+        current->right = new_node; // 새 노드를 왼쪽 자식으로 추가
+        break;
+      }
+      current = current->right;
     }
   }
   new_node->parent = current; // 새 노드의 부모 지정
 
-  if(current == t->nil){  // 루트 노드가 비어있으면
-    t->root = new_node; // 새 노드를 루트 노드로 지정
-  }
-
   // 리밸런싱 함수 호출
   rbtree_insert_fixup(t, new_node);
 
-  return t->root; // 루트 노드 반환. 삽입 이후에도 트리의 루트 노드 가리키도록 유지. return new_node; 하면 안좋은 것 같은데? 
+  return t->root; // 삽입 이후 루트 노드 변경될 수 있으므로 트리의 루트 노드 반환
+}
+
+// 리밸런싱
+void rbtree_insert_fixup(rbtree *t, node_t *node){
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key) {
